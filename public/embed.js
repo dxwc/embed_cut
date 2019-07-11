@@ -38,7 +38,7 @@ function player_creator(dom_id, video_id, start_second, end_second, loop)
             },
             events :
             {
-                onStateChange : (e) =>
+                onStateChange : function(e)
                 {
                     if
                     (
@@ -46,8 +46,14 @@ function player_creator(dom_id, video_id, start_second, end_second, loop)
                         e.target.getCurrentTime() >= end_second
                     )
                     {
-                        if(loop) player.seekTo(start_second);
-                        else     player.pauseVideo();
+                        if(loop)
+                        {
+                            player.seekTo(start_second);
+                        }
+                        else
+                        {
+                            player.pauseVideo();
+                        }
                     }
                     else if
                     (
@@ -57,18 +63,23 @@ function player_creator(dom_id, video_id, start_second, end_second, loop)
                     {
                         player.seekTo(start_second);
                     }
+
+                    if(loop) player.playVideo();
                 },
-                onError : (error) =>
+                onError : function(error)
                 {
                     if(error.data === 101 || error.data === 150)
                     {
-
                         error_dom.innerHTML =
 "Owner of the video disabled playing on anywhere else but on youtube." +
-"Here\'s the original youtube link: <a href='https://www.youtube.com/watch/?v=" +
+" Here\'s the original youtube link: <a href='https://www.youtube.com/watch/?v=" +
 video_id + "'>https://www.youtube.com/watch/?v=" + video_id + "</a>";
 
                     }
+                },
+                onReady : function()
+                {
+                    player.playVideo();
                 }
             }
         }
@@ -81,8 +92,8 @@ function onYouTubeIframeAPIReady()
     (
         'vid',
         url(1),
-        url('?start') || url('?s'),
-        url('?end')   || url('?e'),
-        url('?loop')  || url('?l')
+        Number(url('?start') || url('?s')),
+        Number(url('?end')   || url('?e')),
+        Boolean(url('?loop')  || url('?l'))
     );
 }
