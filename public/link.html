@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Generate</title>
+</head>
+<body>
+    <form v-on:submit.prevent id='app'>
+        <input v-on:input='process_link' type='text' placeholder='Enter a video URL'>
+        <div v-show='id' v-on:keyup='generate_link'>
+            Start minute:
+            <input v-model='sm' type='number' start='0' step='0.1'>
+            second:
+            <input v-model='ss' type='number' start='0' step='0.1'>
+            <br>
+            End minute:
+            <input v-model='em' type='number' start='0' step='0.1'>
+            second:
+            <input v-model='es' type='number' start='0' step='0.1'>
+            <br>
+            Loop ?
+            <input v-model='loop' v-on:change='generate_link' type='checkbox'>
+        </div>
+
+        <div>{{ out }}</div>
+        <div v-show='link'>
+            <a v-bind:href='link' v-html='link'></a>
+        </div>
+    </form>
+    <script>
+        var format_1 = new RegExp
+        (
+            `^https:\\/\\/(?:www|m)\\.youtube\\.com\\/watch\\?` +
+            `(?:.+\\&|)v=([a-zA-Z0-9_\\-]{11})(?:(\\&.*)|$)`
+        );
+
+        var format_2 = new RegExp
+        (
+            `^https:\\/\\/youtu.be\\/([a-zA-Z0-9_\\-]{11})`
+        );
+
+        var format_3 = new RegExp
+        (
+            `^https:\\/\\/www\\.(?:youtube|youtube\\-nocookie)*\\.com\\/embed\\/` +
+            `([a-zA-Z0-9_\\-]{11})`
+        );
+
+        function get_video_id(url)
+        {
+            if(!url || url.constructor !== String) return null;
+
+            let arr = url.match(format_1);
+            if(arr) return arr[1];
+
+            arr = url.match(format_2);
+            if(arr) return arr[1];
+
+            arr = url.match(format_3);
+            if(arr) return arr[1];
+
+            return null;
+        }
+
+        var app = new Vue
+        ({
+            el : '#app',
+            data :
+            {
+                out  : '',
+                id   : '',
+                sm   : 0,
+                ss   : 0,
+                em   : 0,
+                es   : 0,
+                loop : true,
+                link : ''
+            },
+            methods :
+            {
+                process_link : function(e)
+                {
+                    if(!e.target.value.trim().length)
+                    {
+                        this.out = 'Enter a Youtube video URL';
+                    }
+                    else
+                    {
+                        this.id = get_video_id(e.target.value.trim());
+                        if(!this.id) this.out = 'Invalid URL';
+                        this.generate_link();
+                    }
+                },
+                generate_link : function(e)
+                {
+                    if(!this.id)
+                    {
+                        this.link = '';
+                        return;
+                    }
+
+                    function build_query_string(obj)
+                    {
+                        return Object.keys(obj).map
+                        (
+                            function(k)
+                            {
+                                return k + '=' + obj[k];
+                            }
+                        ).join('&');
+                    }
+
+                    var qr_obj = { };
+
+                    this.sm = Number(this.sm);
+                    this.ss = Number(this.ss);
+                    this.em = Number(this.em);
+                    this.es = Number(this.es);
+
+                    if(typeof(this.sm) === 'number' && this.sm >= 0)
+                        qr_obj.s = this.sm * 60;
+                    if(typeof(this.ss) === 'number' && this.ss >= 0)
+                    {
+                        if(qr_obj.s) qr_obj.s += this.ss;
+                        else         qr_obj.s = this.ss;
+                    }
+
+                    if(typeof(this.em) === 'number' && this.em >= 0)
+                        qr_obj.e = this.em * 60;
+                    if(typeof(this.es) === 'number' && this.es >= 0)
+                    {
+                        if(qr_obj.e) qr_obj.e += this.es;
+                        else         qr_obj.e = this.es;
+                    }
+
+                    if
+                    (
+                        typeof(qr_obj.e) === 'number' &&
+                        typeof(qr_obj.e) === 'number' &&
+                        qr_obj.e <= qr_obj.s
+                    )
+                    {
+                        delete qr_obj.e;
+                    }
+
+                    if(!Object.getOwnPropertyNames(qr_obj).length)
+                    {
+                        this.out = 'Enter valid times';
+                        return;
+                    }
+                    else
+                    {
+                        if(this.loop) qr_obj.l = this.loop;
+                        this.out = 'Generated link:';
+                        this.link =
+                            'https://www.example.com/?' +
+                            build_query_string(qr_obj);
+                        qr_obj = { };
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
