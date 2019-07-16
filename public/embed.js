@@ -5,7 +5,7 @@ first_script.parentNode.insertBefore(script, first_script);
 
 let error_dom = document.getElementById('error');
 
-function player_creator(dom_id, video_id, start_second, end_second, loop)
+function player_creator(dom_id, video_id, start_second, end_second, loop, demo)
 {
     if
     (
@@ -42,6 +42,13 @@ function player_creator(dom_id, video_id, start_second, end_second, loop)
                 {
                     if
                     (
+                        YT.PlayerState.PAUSED &&
+                        e.target.getCurrentTime() < end_second &&
+                        e.target.getCurrentTime() > start_second
+                    ) return;
+
+                    if
+                    (
                         typeof(end_second) === 'number' &&
                         e.target.getCurrentTime() >= end_second
                     )
@@ -68,6 +75,10 @@ function player_creator(dom_id, video_id, start_second, end_second, loop)
                 },
                 onError : function(error)
                 {
+                    if(demo)
+                    {
+                        app.$data.out = 'Video embed is not allowed';
+                    }
                     if(error.data === 101 || error.data === 150)
                     {
                         error_dom.innerHTML =
@@ -76,10 +87,14 @@ function player_creator(dom_id, video_id, start_second, end_second, loop)
 video_id + "'>https://www.youtube.com/watch/?v=" + video_id + "</a>";
 
                     }
+                    else
+                    {
+                        console.log('Embed error:', error.data);
+                    }
                 },
                 onReady : function()
                 {
-                    player.playVideo();
+                    if(!demo) player.playVideo();
                 }
             }
         }

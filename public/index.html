@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src='/js-url.js'></script>
+    <script src='/vue.js'></script>
     <title>Document</title>
     <style>
         html, body
@@ -14,26 +15,68 @@
             border: 0;
             max-width: 100%;
             overflow-x: hidden;
-            color: white;
-            background: black;
         }
 
-        #vid, iframe
+        iframe
         {
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 0;
             margin: 0;
             padding: 0;
-            height: 100%;
+            height: 50vh;
+            width: 100%;
+            background: black;
+            color: white;
+        }
+
+        form
+        {
+            display: table;
+            margin: 0 auto;
+        }
+
+        #inp
+        {
             width: 100%;
         }
     </style>
 </head>
 <body>
-    <div id='vid'></div>
+    <div id='app'>
+        <div v-show='!id' v-if='url(1) && url(1).length'>
+            <span id='vid'></span>
+        </div>
+    <div v-show='id'>
+        <span id='demo'></span>
+    </div>
     <div id='error'></div>
     <script src='/embed.js'></script>
+    <form v-on:submit.prevent>
+        <h3>Generate youtube link with start and end time</h3>
+        <input
+            id='inp'
+            v-on:input='process_link'
+            type='text'
+            placeholder='Enter a video URL'>
+        <div v-show='id' v-on:keyup='generate_link'>
+            Start minute:
+            <input v-model='sm' type='number' min='0' step='1'>
+            second:
+            <input v-model='ss' type='number' min='0' step='1'>
+            <br>
+            End minute:
+            <input v-model='em' type='number' min='0' step='1'>
+            second:
+            <input v-model='es' type='number' min='0' step='1'>
+            <br>
+            Loop ?
+            <input v-model='loop' v-on:change='generate_link' type='checkbox'>
+        </div>
+
+        <div>{{ out }}</div>
+        <div v-show='link'>
+            <a v-bind:href='link' v-html='link'></a>
+        </div>
+    </form>
+    </div>
+    <script src='/generate.js'></script>
 </body>
 </html>
