@@ -7,7 +7,7 @@
     "express": "^4.17.1",
     "helmet": "^3.18.0",
     "sqlite3": "^4.0.9",
-    "validator": "^11.1.0",
+    "validator": "^13.7.0",
     "vid_data": "^0.3.1"
   }
 }
